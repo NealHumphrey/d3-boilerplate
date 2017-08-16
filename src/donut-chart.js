@@ -1,16 +1,15 @@
 "use strict";
 
-var DonutChart = function(container) { //
-    this.extendPrototype(DonutChart.prototype, DonutChartExtension);
-    ChartProto.call(this, container); 
-}
+bp.donutChart = Object.create(bp.base);
 
-DonutChart.prototype = Object.create(ChartProto.prototype);
+bp.donutChart.extend({
+    setup: function(container){ 
+        var chart = this;
 
-var DonutChartExtension = {
-    _setup: function(container){ 
-        var chart = this
+        //Run the boiler plate stuff first
+        chart.baseSetup(container);
 
+        //Do custom stuff
         chart._dataLabel = null;
 
         chart.arcTween = function(newAngle) { // HT: http://bl.ocks.org/mbostock/5100636
@@ -43,16 +42,21 @@ var DonutChartExtension = {
             .attr('class','pie_text')
             .attr('text-anchor','middle'); 
 
+        return chart;
     },
-    _resize: function() {
+
+    resize: function() {
         /*
         Perform graph specific resize functions, like adjusting axes
         This should also work to initialize the attributes the first time
         DOM elements will typically be created in the _setup function
         */
+        var chart = this
 
-        //namespace assignment - allow access to 'this' inside child functions
-        var chart = this;
+        //Run the boiler plate stuff first
+        chart.baseResize();
+
+        //Do custom stuff
         chart.innerChart.attr("transform", "translate(" + (chart.innerWidth()/2 + chart.margin().left) + "," + (chart.innerHeight()/2 + chart.margin().top) +")"); // Moving the center point
 
         chart.arc = d3.arc()
@@ -66,15 +70,22 @@ var DonutChartExtension = {
             .attr('y', chart.height() - 5 )
             .attr('x', chart.width() / 2)
 
+        chart.instant_update()
+
+        return chart;
     },
-    _update: function(){
+    update: function(data){
         /*
         Draw the graph using the current data and settings. 
         This should draw the graph the first time, and is always run after both '_setup' and '_resize' are run
         */
 
         var chart = this;
-        
+
+        //Run the boiler plate stuff first
+        chart.baseUpdate(data);
+
+        //Do custom stuff
         var percent = chart.data()[0][chart.field()] //assume data comes in form [{'field':0.9,'unusedfield':'unusedvalue'},{ignored objects after first}]
         var angle = percent * (Math.PI * 2)
 
@@ -88,10 +99,9 @@ var DonutChartExtension = {
 
         chart.labelElement
             .text(chart.data()[0][chart.label()]);
+
+        return chart;
     },
-
-   
-
     dataLabel: function(_){ 
         if (!arguments.length) {
             if (this._dataLabel=== null) {
@@ -104,19 +114,19 @@ var DonutChartExtension = {
         this._dataLabel = _;
         return this;
     },
-
     radius: function(_) {
         if (!arguments.length) {
             return Math.min(this.innerWidth(), this.innerHeight()) / 2; 
         }
         console.log("can't set radius, it's calculated")
         return this;
-    } 
-
+    }
     //Add more getter/setters as needed
 
+    
+});
 
-}; //end specific chart Extension
+
 
 
 

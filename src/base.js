@@ -1,15 +1,40 @@
 "use strict";
 
-var ChartProto = function(container) {    //chartOptions is an object, was DATA_FILE, el, field, sortField, asc, readableField                                                              
-    this.setup(container); 
-    return this;
-};
+var bp = {};
 
-ChartProto.prototype = {
+bp.base = {
+    /*
+    Every chart should have (at least) 3 public methods:
+    setup: creates the SVG object, an innerChart g object, and initializes defaults
+    resize: changes anything that needs to adjust if the size of the svg changes, including the first time
+    update: changes anything that needs to adjust if the data is updated or some other setting changes, 
+            including the first time.
+    */
+
+    setup: function(container){
+      //Custom charts should override this method themselves
+      this.baseSetup(container);
+      return this;
+    },
+    resize: function(container){
+      //Custom charts should override this method themselves
+      this.baseResize(container);
+      this.instant_update(); //It's recommend that resize() functions end with an instant_update, as
+                             //update redraws the contents and instant_update ignores delay/duration settings
+      return this;
+    },
+    update: function(container){
+      //Custom charts should override this method themselves
+      this.baseUpdate(container);
+      return this;
+    },
+
+
     create: function(){
       /*
-      This method is called to trigger drawing of the chart once all initial properties have been 
-      set using method chaining. Example:
+      An alias for resize, to make the public interface slightly more intuitive. 
+      
+      Example:
 
       myChart = new ChartProto('.myContainerSelector')
                 .width(500)
@@ -23,12 +48,17 @@ ChartProto.prototype = {
       return chart
 
     },
-    setup: function(container) {
+    baseSetup: function(container) {
       /*
       setup initializes all the default parameters, and create the container objects that are only created once. 
       This method is run automatically when a new object is created
 
-      Any chart that inherits from this prototype should have a _setup method, which is called at the end of this function
+      Any chart that inherits from this prototype should have a setup method, which can benefit from the contents
+      of this method if they choose to use it, e.g.:
+
+      setup: function(container){
+        this.baseSetup(container);
+      }
       */
 
       var chart = this; 
@@ -54,11 +84,10 @@ ChartProto.prototype = {
       chart.innerChart = this.svg.append('g')
             .classed("chart",true)
 
-      //Call the chart-specific setup function for continued setup
-      if (typeof chart._setup === "function"){ chart._setup(); }
+      return chart;
 
     },
-    resize: function(){
+    baseResize: function(){
       /*
       Anything that needs to be changed on resize should go in here. 
       Note, this function also sets up the initial sizes of these elements because
@@ -80,12 +109,42 @@ ChartProto.prototype = {
 
       chart.innerChart.attr("transform", "translate(" + this.margin().left + "," + this.margin().top + ")");
 
-      if (typeof chart._resize === "function"){ chart._resize(); };
-      
-      chart.instant_update();
-      
-
     }, 
+    baseUpdate: function(data){
+      /*This is the public method used to call the private _update method of each chart
+      
+      Every chart that inherits from ChartProto should include an _update method, which 
+      redraws the inner contents of the chart when needed. When the _update method is called, 
+      it uses this.data as the basis of the drawing. 
+
+      This public method ensures a consistent approach to the update method for all charts:
+      Users can call the method with or without new data - if no data is passed, the previously
+      used data will be used. Typically this will occur when the user has updated some other 
+      property, such as 'field' or some other setting. 
+
+      When using method chaining to update the properties of the graph, use the update() function
+      to trigger the changes in the graph itself. 
+      */
+      var chart = this
+      
+      if (data != undefined) {
+
+        chart.data(data);
+
+        //Calculated fields as necessary
+        //TODO maybe move this into the data getter/setter?
+        this.minValue = d3.min(chart.data(), function(d) { 
+              if (chart.field()) return d[chart.field()];
+              return null;
+        });
+        this.maxValue = d3.max(chart.data(), function(d) { 
+              if (chart.field()) return d[chart.field()];
+              return null;
+        });
+
+      };
+
+    },      
     instant_update: function(){
       /*
       Overrides the .duration() and .delay() of a chart before applying .update()
@@ -104,56 +163,15 @@ ChartProto.prototype = {
       chart.duration(old_duration)
       chart.delay(old_delay)
     },
-    update: function(data){
-      /*This is the public method used to call the private _update method of each chart
-      
-      Every chart that inherits from ChartProto should include an _update method, which 
-      redraws the inner contents of the chart when needed. When the _update method is called, 
-      it uses this.data as the basis of the drawing. 
-
-      This public method ensures a consistent approach to the update method for all charts:
-      Users can call the method with or without new data - if no data is passed, the previously
-      used data will be used. Typically this will occur when the user has updated some other 
-      property, such as 'field' or some other setting. 
-
-      When using method chaining to update the properties of the graph, use the update() function
-      to trigger the changes in the graph itself. 
-      */
-      var chart = this
-      if (arguments.length) {
-
-        chart.data(data);
-
-        //Calculated fields as necessary
-        //TODO maybe move this into the data getter/setter?
-        this.minValue = d3.min(chart.data(), function(d) { 
-              if (chart.field()) return d[chart.field()];
-              return null;
-        });
-        this.maxValue = d3.max(chart.data(), function(d) { 
-              if (chart.field()) return d[chart.field()];
-              return null;
-        });
-
-      };
-
-      this._update();
-    },      
-
-    extendPrototype: function(destinationPrototype, obj){ 
+    extend: function(obj) {
       /*
-      Convenience function for merging prototypes
-
-      Example usage:
-      var BarChart = function(container) { //
-          this.extendPrototype(BarChart.prototype, BarExtension);
-          ChartProto.call(this, container); 
-      }
+      Simple mapping function that assigns all elements of an object
+      to this object. Used to avoid having to type `bp.chartname.functionname = ` 
+      when adding new properties to a chart. 
       */
-
       for(var i in obj){
-          destinationPrototype[i] = obj[i];
-      } 
+          this[i] = obj[i];
+      };
     },
 
     //TODO not used currently
@@ -241,82 +259,4 @@ ChartProto.prototype = {
         this._duration = _;
         return this;
     }
-};
-
-
-
-
-
-
-
-
-
-
-
-/*
-*********************************************************************************************************
-
-
-
-This approach is deprecated! Instead, use the ChartProto object that does not have a callback in it
-Maintained here until refactoring is completed
-
-
-*********************************************************************************************************
-*/
-
-var ChartProtoCallback = function(chartOptions) {    //chartOptions is an object, was DATA_FILE, el, field, sortField, asc, readableField                                                              
-    this.initialize(chartOptions); 
-};
-
-ChartProtoCallback.prototype = {
-    
-    initialize: function(chartOptions) {
-      chartOptions.dataRequest.callback = chartCallback;  
-
-      var chart = this; 
-      this.field = chartOptions.field;
-      chart.width = chartOptions.width;
-      chart.height = chartOptions.height;
-      this.margin = chartOptions.margin || {top:10,right:10,bottom:10,left:10};
-      this.svg = d3.select(chartOptions.container)
-        .append("svg")
-        .attr('width', chart.width)
-        .attr('height', this.height); // TODO allow margins to be passed in
-      this.label = chart.svg.append('text')
-        .attr('y', chart.height - 5 ) // TODO 
-        .attr('x', chart.width / 2)
-        .attr('class','pie_text')
-        .attr('text-anchor','middle'); 
-
-      controller.getData(chartOptions.dataRequest); // dataRequest is an object {name:<String>, url: <String>[,callback:<Function>]]}
-
-      function chartCallback(data){
-        console.log('chartProto callback',chart);
-        chart.data = data.objects;
-        if (chartOptions.sort !== undefined ) {
-          chart.data.sort(function(a, b) { 
-            if (chartOptions.sort.direction === 'asc') return a[chartOptions.sort.field] - b[chartOptions.sort.field];
-            return b[chartOptions.sort.field] - a[chartOptions.sort.field]; 
-          });            
-        }
-        chart.minValue = d3.min(chart.data, function(d) { 
-              if (chartOptions.field) return d[chartOptions.field];
-                return null;
-        });
-        chart.maxValue = d3.max(chart.data, function(d) { 
-              if (chartOptions.field) return d[chartOptions.field];
-              return null;
-        });
-        console.log(chart.setupType);
-        // The below 'if' block is necessary because SubsidyTimlineChart cannot access its own setupType function during the necessary ChartProto.call() call.
-        if (typeof chart.setupType === "function"){ console.log('calling setupType'); chart.setupType(chartOptions); }
-      }
-
-    },                       
-    extendPrototype: function(destinationPrototype, obj){ 
-      for(var i in obj){
-          destinationPrototype[i] = obj[i];
-      } 
-    } 
 };
