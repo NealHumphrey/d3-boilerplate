@@ -10,7 +10,7 @@ bp.barChart.extend({
         var chart = this 
 
         //Run the boiler plate stuff first
-        chart.baseSetup(container);
+        bp.base.setup.call(chart,container);
 
         //Do custom stuff
 
@@ -39,7 +39,7 @@ bp.barChart.extend({
         var chart = this;
 
         //Run the boiler plate stuff first
-        chart.baseResize();
+        bp.base.resize.call(chart);
 
         //Do custom stuff
 
@@ -62,10 +62,9 @@ bp.barChart.extend({
         var chart = this;
 
         //Run the boiler plate stuff first
-        chart.baseUpdate(data);
+        bp.base.update.call(chart, data);
 
         //Do custom stuff
-
         var min = d3.min(chart.data(), function(d) { return d[chart.field()]})
         var max = d3.max(chart.data(),function(d) {return d[chart.field()]})
         

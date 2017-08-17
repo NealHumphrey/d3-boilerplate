@@ -7,7 +7,7 @@ bp.donutChart.extend({
         var chart = this;
 
         //Run the boiler plate stuff first
-        chart.baseSetup(container);
+        bp.base.setup.call(chart,container);
 
         //Do custom stuff
         chart._dataLabel = null;
@@ -54,7 +54,7 @@ bp.donutChart.extend({
         var chart = this
 
         //Run the boiler plate stuff first
-        chart.baseResize();
+        bp.base.resize.call(chart);
 
         //Do custom stuff
         chart.innerChart.attr("transform", "translate(" + (chart.innerWidth()/2 + chart.margin().left) + "," + (chart.innerHeight()/2 + chart.margin().top) +")"); // Moving the center point
@@ -71,8 +71,6 @@ bp.donutChart.extend({
             .attr('x', chart.width() / 2)
 
         chart.instant_update()
-
-        return chart;
     },
     update: function(data){
         /*
@@ -83,7 +81,7 @@ bp.donutChart.extend({
         var chart = this;
 
         //Run the boiler plate stuff first
-        chart.baseUpdate(data);
+        bp.base.update.call(chart, data);
 
         //Do custom stuff
         var percent = chart.data()[0][chart.field()] //assume data comes in form [{'field':0.9,'unusedfield':'unusedvalue'},{ignored objects after first}]

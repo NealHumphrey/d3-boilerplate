@@ -11,24 +11,24 @@ bp.base = {
             including the first time.
     */
 
+    /*
     setup: function(container){
       //Custom charts should override this method themselves
       this.baseSetup(container);
-      return this;
+      return this; //setup should always return chart so that it can be method chained
     },
     resize: function(container){
       //Custom charts should override this method themselves
       this.baseResize(container);
       this.instant_update(); //It's recommend that resize() functions end with an instant_update, as
                              //update redraws the contents and instant_update ignores delay/duration settings
-      return this;
     },
     update: function(container){
       //Custom charts should override this method themselves
       this.baseUpdate(container);
-      return this;
+      return this; //update should always return chart so that it can be method chained
     },
-
+    */
 
     create: function(){
       /*
@@ -48,7 +48,7 @@ bp.base = {
       return chart
 
     },
-    baseSetup: function(container) {
+    setup: function(container) {
       /*
       setup initializes all the default parameters, and create the container objects that are only created once. 
       This method is run automatically when a new object is created
@@ -87,7 +87,7 @@ bp.base = {
       return chart;
 
     },
-    baseResize: function(){
+    resize: function(){
       /*
       Anything that needs to be changed on resize should go in here. 
       Note, this function also sets up the initial sizes of these elements because
@@ -110,7 +110,7 @@ bp.base = {
       chart.innerChart.attr("transform", "translate(" + this.margin().left + "," + this.margin().top + ")");
 
     }, 
-    baseUpdate: function(data){
+    update: function(data){
       /*This is the public method used to call the private _update method of each chart
       
       Every chart that inherits from ChartProto should include an _update method, which 
@@ -162,6 +162,8 @@ bp.base = {
       //Reset the transition settings
       chart.duration(old_duration)
       chart.delay(old_delay)
+
+      return chart;
     },
     extend: function(obj) {
       /*
