@@ -71,6 +71,7 @@ bp.base = {
       chart._height = 300;
       chart._margin = {top:10,right:10,bottom:10,left:10};
       chart._container = container
+      chart._autoresize = {width:false,height:false};
 
       chart._delay = 200
       chart._duration = 1000
@@ -260,5 +261,41 @@ bp.base = {
         if (!arguments.length) return this._duration;
         this._duration = _;
         return this;
+    },
+
+    autoresize: function(_){
+      var chart = this;
+      if (!arguments.length) return this._autoresize;
+      this._autoresize = _;
+
+
+      var run_autoresize = function(){
+        var containerElement = d3.select(chart.container()).node();
+        if (chart.autoresize()['height']){
+          var height = containerElement.clientHeight;
+          chart.height(height);
+        }
+        if (chart.autoresize()['width']) {
+          var width = containerElement.clientWidth;
+          chart.width(width);  
+        }
+        if (chart.autoresize()['width'] || chart.autoresize()['height']) {
+          chart.resize();
+        }
+
+        
+      };
+
+      if (chart._autoresize['width'] || chart._autoresize['height']) {
+          var containerElement = d3.select(chart.container()).node();
+          addResizeListener(containerElement, run_autoresize );
+        } else {
+          //TODO TODO TODO!!!
+          //for the autoresize getter/setter
+        //removeResizeListener(resizeElement, resizeCallback);
+        }
+ 
+      return this;
     }
+
 };

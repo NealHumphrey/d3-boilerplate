@@ -14,33 +14,26 @@
     <body>
         <h1>Demo of chart template</h1>
         <div class="demoChart"></div>
-
-    <script src="../src/chart-prototype.js"></script>
+    <script src="../src/utils.js"></script>
+    <script src="../src/base.js"></script>
     <script src="../src/donut-chart.js"></script>
     <script>
 
-        var data = [{"letter":"A","percent":0.8}];
+        var data = [{"myLabel":"A","percent":0.8}];
 
-        var demoChart = new DonutChart('.demoChart')
-                    .width(400)
+        var demoChart = Object.create(bp.donutChart)
+
+            demoChart.setup('.demoChart')
+                    .autoresize({'width':true,'height':false})
                     .height(400)
                     .margin({top: 20, right: 20, bottom: 30, left: 20})
                     .data(data)
                     .field('percent')
-                    .label('letter')
+                    .label('myLabel')
 
                     .duration(1000)
                     .create()
 
-
-        setTimeout(function(){
-            demoChart.width(200).height(200).resize()
-        },2000)
-        setTimeout(function(){
-            var copiedData = JSON.parse(JSON.stringify(data))
-            copiedData[0]['percent'] = 0.2
-            demoChart.update(copiedData)
-        }, 3000)
     </script>
     </body>
 
