@@ -27,6 +27,8 @@ bp.barChart.extend({
             .append("g")
             .classed("x-axis",true)
 
+        return chart;
+
     }, // end setupType
     resize: function() {
         /*
@@ -155,7 +157,7 @@ bp.barChart.extend({
 
         var leavingBars = bars.exit().remove()
 
-        
+        return chart;
 
     },
 

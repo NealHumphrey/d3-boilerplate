@@ -13,23 +13,39 @@
     </head>
     <body>
         <h1>Demo of chart template</h1>
-        <div class="demoChart"></div>
+        <div id="demoDonut"></div>
+        <div id="demoBar"></div>
+
     <script src="../src/utils.js"></script>
     <script src="../src/base.js"></script>
     <script src="../src/donut-chart.js"></script>
+    <script src="../src/bar-chart.js"></script>
     <script>
 
         var data = [{"myLabel":"A","percent":0.8}];
 
         var demoChart = Object.create(bp.donutChart)
 
-            demoChart.setup('.demoChart')
+            demoChart.setup('#demoDonut')
                     .autoresize({'width':true,'height':false})
                     .height(400)
                     .margin({top: 20, right: 20, bottom: 30, left: 20})
                     .data(data)
                     .field('percent')
                     .label('myLabel')
+
+                    .duration(1000)
+                    .create()
+
+        var barData = [{"price":100},{"price":200},{"price":300},{"price":150}];
+        var demoBar = Object.create(bp.barChart);
+            demoBar.setup('#demoBar')
+                    .autoresize({'width':true,'height':false})
+                    .height(400)
+                    .margin({top: 20, right: 20, bottom: 30, left: 20})
+                    .data(data)
+                    .field('percent')
+                    .label('price')
 
                     .duration(1000)
                     .create()
